@@ -6,6 +6,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from .services import analyze_script
+from .budget import predict_budget_for_production
+from .serializers import BudgetPredictionSerializer
 
 class ProductionViewSet(viewsets.ModelViewSet):
     queryset = Production.objects.all()
@@ -16,6 +18,16 @@ class ProductionViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
+
+    @action(detail=True, methods=['post'], url_path='predict-budget')
+    def predict_budget(self, request, pk=None):
+        """
+        Generates a budget prediction for the production based on a simple heuristic.
+        """
+        production = self.get_object()
+        prediction = predict_budget_for_production(production)
+        serializer = BudgetPredictionSerializer(prediction)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=['post'])
     def breakdown(self, request, pk=None):

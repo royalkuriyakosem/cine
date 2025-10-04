@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from datetime import timedelta
+from celery.schedules import crontab
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = '123456789'
@@ -107,4 +108,12 @@ REST_FRAMEWORK = {
 }
 CELERY_BROKER_URL = os.environ.get('REDIS_URL', 'redis://redis:6379/0')
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+
+CELERY_BEAT_SCHEDULE = {
+    'recalculate-budget-predictions': {
+        'task': 'productions.tasks.recalculate_budget_predictions',
+        'schedule': crontab(hour=0, minute=0),  # every night at midnight
+    },
+}
+
 AUTH_USER_MODEL = 'accounts.CustomUser'

@@ -72,3 +72,12 @@ class ScriptBreakdown(models.Model):
 
     def __str__(self):
         return f"Breakdown for {self.production.title} ({self.created_at.date()})"
+
+class BudgetPrediction(models.Model):
+    production = models.ForeignKey(Production, on_delete=models.CASCADE, related_name='budget_predictions')
+    predicted_total = models.DecimalField(max_digits=12, decimal_places=2)
+    details = models.JSONField(default=dict)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Prediction for {self.production.title}"
