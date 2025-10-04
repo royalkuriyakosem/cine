@@ -8,7 +8,7 @@ from channels.layers import get_channel_layer
 
 from .models import CallSheet, DailyProductionReport, CrewCheckIn
 from .serializers import CallSheetSerializer, DailyProductionReportSerializer, CrewCheckInSerializer
-from accounts.permissions import role_required
+from accounts.permissions import RolePermission
 from .pdf_templates import generate_simple_call_sheet
 
 class CallSheetViewSet(viewsets.ModelViewSet):
@@ -17,10 +17,10 @@ class CallSheetViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy', 'publish']:
-            permission_classes = [role_required(['ADMIN', 'UPM_AD', 'LINE_PRODUCER'])]
-        else:
-            permission_classes = [IsAuthenticated]
-        return [permission() for permission in permission_classes]
+            # Use the new RolePermission for edit-related actions
+            self.required_roles = ['UPM_AD', 'LINE_PRODUCER']
+            return [RolePermission()]
+        return [IsAuthenticated()]
 
     @action(detail=True, methods=['post'])
     def publish(self, request, pk=None):

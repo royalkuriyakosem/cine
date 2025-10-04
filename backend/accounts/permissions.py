@@ -1,14 +1,31 @@
 from rest_framework.permissions import BasePermission
 
-class RoleRequiredPermission(BasePermission):
-    def __init__(self, roles=None):
-        self.roles = roles or []
-
+class RolePermission(BasePermission):
+    """
+    A permission class that checks if a user has one of the required roles.
+    The view must have a `required_roles` attribute, which is a list of
+    role strings.
+    
+    Example:
+        class MyView(APIView):
+            permission_classes = [RolePermission]
+            required_roles = ['PRODUCER', 'DIRECTOR']
+    """
     def has_permission(self, request, view):
-        return hasattr(request.user, 'role') and request.user.role in self.roles
+        # Allow access if the user is not authenticated, so other permissions can handle it.
+        if not request.user or not request.user.is_authenticated:
+            return True
 
-def role_required(roles):
-    class _RoleRequired(RoleRequiredPermission):
-        def __init__(self):
-            super().__init__(roles)
-    return _RoleRequired
+        # Admins have universal access.
+        if request.user.role == 'ADMIN':
+            return True
+
+        # Get the list of required roles from the view.
+        required_roles = getattr(view, 'required_roles', [])
+        
+        # If no roles are required, deny access by default for safety.
+        if not required_roles:
+            return False
+
+        # Check if the user's role is in the required list.
+        return request.user.role in required_roles

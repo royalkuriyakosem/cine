@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from .models import VFXShot, Asset, ShotVersion
 from .serializers import VFXShotSerializer, AssetSerializer, ShotVersionSerializer
 from .permissions import IsPostProdOrAssigned
+from accounts.permissions import RolePermission
 
 class VFXShotViewSet(viewsets.ModelViewSet):
     queryset = VFXShot.objects.all()
@@ -30,8 +31,12 @@ class ShotVersionViewSet(viewsets.ModelViewSet):
         print(f"NOTIFICATION: New version {instance.version_number} uploaded for {instance.vfx_shot}.")
         # In a real app, you would trigger a Celery task here to send an email or a webhook.
 
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['post'], permission_classes=[RolePermission])
     def approve(self, request, pk=None):
+        # Define roles required specifically for this action
+        self.required_roles = ['POST_PROD', 'DEPT_HEAD'] # DEPT_HEAD can be a VFX Supervisor
+        self.check_permissions(request) # Manually trigger permission check
+
         version = self.get_object()
         version.approved = True
         version.approved_by = request.user
