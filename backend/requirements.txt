@@ -7,3 +7,5 @@ djangorestframework-simplejwt
 gunicorn
 django-filter
 reportlab
+boto3
+django-storages[s3]

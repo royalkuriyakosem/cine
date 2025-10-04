@@ -30,6 +30,12 @@ services:
       - DJANGO_SETTINGS_MODULE=filmhub.settings
       - DATABASE_URL=postgres://filmhub:filmhub@db:5432/filmhub
       - REDIS_URL=redis://redis:6379/0
+      - USE_S3=FALSE
+      - AWS_ACCESS_KEY_ID=your_key
+      - AWS_SECRET_ACCESS_KEY=your_secret
+      - AWS_STORAGE_BUCKET_NAME=your_bucket
+      - AWS_S3_REGION_NAME=your_region
+      - AWS_S3_ENDPOINT_URL=https://s3.amazonaws.com  # Or your S3-compatible endpoint
 
   worker:
     build: ./backend
