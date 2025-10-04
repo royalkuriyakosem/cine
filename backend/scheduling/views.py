@@ -3,6 +3,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.http import HttpResponse
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 
 from .models import CallSheet, DailyProductionReport, CrewCheckIn
 from .serializers import CallSheetSerializer, DailyProductionReportSerializer, CrewCheckInSerializer
@@ -25,6 +27,22 @@ class CallSheetViewSet(viewsets.ModelViewSet):
         call_sheet = self.get_object()
         call_sheet.published = True
         call_sheet.save()
+
+        # Send update to the production dashboard channel
+        channel_layer = get_channel_layer()
+        group_name = f'production_{call_sheet.production.id}'
+        async_to_sync(channel_layer.group_send)(
+            group_name,
+            {
+                'type': 'send_update',
+                'message': {
+                    'event': 'CALL_SHEET_PUBLISHED',
+                    'call_sheet_id': call_sheet.id,
+                    'date': str(call_sheet.date),
+                }
+            }
+        )
+
         return Response({'status': 'Call sheet published'})
 
     @action(detail=True, methods=['post'], url_path='check-in')

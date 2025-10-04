@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Production, Scene, Shot, BudgetLine
+from .models import Production, Scene, Shot, BudgetLine, ScriptBreakdown, BudgetPrediction
 
 class ProductionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -20,4 +20,9 @@ class ShotSerializer(serializers.ModelSerializer):
 class BudgetLineSerializer(serializers.ModelSerializer):
     class Meta:
         model = BudgetLine
+        fields = '__all__'
+
+class BudgetPredictionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BudgetPrediction
         fields = '__all__'

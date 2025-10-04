@@ -1,12 +1,16 @@
 import os
 from pathlib import Path
 from datetime import timedelta
+from celery.schedules import crontab
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = '123456789'
 DEBUG = True
 ALLOWED_HOSTS = ['*']
+
+# Add 'channels' to INSTALLED_APPS
 INSTALLED_APPS = [
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -24,6 +28,18 @@ INSTALLED_APPS = [
     'finance',
     'storages',
 ]
+
+# ASGI & Channels Configuration
+ASGI_APPLICATION = 'filmhub.asgi.application'
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [os.environ.get('REDIS_URL', 'redis://redis:6379/1')],
+        },
+    },
+}
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -64,6 +80,7 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Add this line
 
 # Add these lines for media file handling
 USE_S3 = os.environ.get('USE_S3') == 'TRUE'
@@ -107,4 +124,16 @@ REST_FRAMEWORK = {
 }
 CELERY_BROKER_URL = os.environ.get('REDIS_URL', 'redis://redis:6379/0')
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+
+CELERY_BEAT_SCHEDULE = {
+    'recalculate-budget-predictions': {
+        'task': 'productions.tasks.recalculate_budget_predictions',
+        'schedule': crontab(hour=0, minute=0),
+    },
+    'check-contract-expirations': {
+        'task': 'finance.tasks.check_contract_expirations',
+        'schedule': crontab(hour=1, minute=0), # Runs at 1 AM
+    },
+}
+
 AUTH_USER_MODEL = 'accounts.CustomUser'
