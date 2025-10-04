@@ -8,15 +8,18 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--file', type=str, required=True,
                           help='Path to the script file (.txt or .pdf)')
+        parser.add_argument('--use-ai', action='store_true',
+                          help='Use AI-powered analysis (requires OpenAI API key)')
 
     def handle(self, *args, **options):
         file_path = options['file']
+        use_ai = options['use_ai']
         
         if not os.path.exists(file_path):
             self.stderr.write(f"File not found: {file_path}")
             return
         
-        # Basic file type handling
+        # Read the file
         if file_path.endswith('.pdf'):
             try:
                 import PyPDF2
@@ -33,7 +36,8 @@ class Command(BaseCommand):
                 text = file.read()
 
         # Analyze the script
-        breakdown = analyze_script(text)
+        self.stdout.write(f"Analyzing script using {'AI' if use_ai else 'basic'} analysis...")
+        breakdown = analyze_script(text, use_ai=use_ai)
 
         # Output the results
         for category, items in breakdown.items():

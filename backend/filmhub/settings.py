@@ -108,3 +108,9 @@ REST_FRAMEWORK = {
 CELERY_BROKER_URL = os.environ.get('REDIS_URL', 'redis://redis:6379/0')
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 AUTH_USER_MODEL = 'accounts.CustomUser'
+
+# OpenAI Configuration
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
+
+# Add this setting
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

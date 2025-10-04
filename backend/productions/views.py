@@ -24,6 +24,7 @@ class ProductionViewSet(viewsets.ModelViewSet):
         """
         production = self.get_object()
         script_text = request.data.get('script_text')
+        use_ai = request.data.get('use_ai', True)
         
         if not script_text:
             return Response(
@@ -32,7 +33,7 @@ class ProductionViewSet(viewsets.ModelViewSet):
             )
 
         # Analyze the script
-        analysis = analyze_script(script_text)
+        analysis = analyze_script(script_text, use_ai=use_ai)
 
         # Save the breakdown
         breakdown = ScriptBreakdown.objects.create(
@@ -44,6 +45,7 @@ class ProductionViewSet(viewsets.ModelViewSet):
         return Response({
             "id": breakdown.id,
             "created_at": breakdown.created_at,
+            "analysis_method": "ai" if use_ai else "basic",
             **analysis
         })
 
