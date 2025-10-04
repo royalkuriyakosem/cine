@@ -60,7 +60,8 @@ class CallSheetViewSet(viewsets.ModelViewSet):
 class DailyProductionReportViewSet(viewsets.ModelViewSet):
     queryset = DailyProductionReport.objects.all()
     serializer_class = DailyProductionReportSerializer
-    permission_classes = [role_required(['ADMIN', 'UPM_AD', 'LINE_PRODUCER', 'PRODUCER'])]
+    permission_classes = [RolePermission]
+    required_roles = ['ADMIN', 'UPM_AD', 'LINE_PRODUCER', 'PRODUCER']
 
 class MyCallSheetView(generics.ListAPIView):
     serializer_class = CallSheetSerializer

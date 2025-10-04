@@ -2,10 +2,14 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth import get_user_model
-from .permissions import role_required
-from .serializers import UserProfileSerializer, UserCreateSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
+from .permissions import RolePermission
+from .serializers import UserProfileSerializer, UserCreateSerializer, MyTokenObtainPairSerializer
 
 User = get_user_model()
+
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
 
 class UserProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = UserProfileSerializer
@@ -17,14 +21,17 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
 class UserCreateView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserCreateSerializer
-    permission_classes = [role_required(['ADMIN'])]
+    permission_classes = [RolePermission]
+    required_roles = ['ADMIN']
 
 class AdminOnlyView(APIView):
-    permission_classes = [role_required(['ADMIN'])]
+    permission_classes = [RolePermission]
+    required_roles = ['ADMIN']
     def get(self, request):
         return Response({"message": "Hello, Admin!"})
 
 class ProducerOrDirectorView(APIView):
-    permission_classes = [role_required(['PRODUCER', 'DIRECTOR'])]
+    permission_classes = [RolePermission]
+    required_roles = ['PRODUCER', 'DIRECTOR']
     def get(self, request):
         return Response({"message": "Hello, Producer or Director!"})

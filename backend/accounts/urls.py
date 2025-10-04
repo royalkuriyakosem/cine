@@ -1,18 +1,21 @@
 from django.urls import path
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
-    TokenVerifyView,
+from rest_framework_simplejwt.views import TokenRefreshView
+from .views import (
+    UserProfileView, 
+    UserCreateView, 
+    AdminOnlyView, 
+    ProducerOrDirectorView,
+    MyTokenObtainPairView
 )
-from .views import UserProfileView, UserCreateView
 
 urlpatterns = [
     # JWT Auth endpoints
-    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     
     # User endpoints
+    path('register/', UserCreateView.as_view(), name='user_create'),
     path('profile/', UserProfileView.as_view(), name='user_profile'),
-    path('users/', UserCreateView.as_view(), name='user_create'),
+    path('admin-only/', AdminOnlyView.as_view(), name='admin_only'),
+    path('producer-director/', ProducerOrDirectorView.as_view(), name='producer_director'),
 ]

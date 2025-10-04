@@ -7,8 +7,10 @@ djangorestframework-simplejwt
 gunicorn
 django-filter
 reportlab
-boto3
-django-storages[s3]
 channels
 channels-redis
 daphne
+psycopg2-binary
+django-storages
+boto3
+django-cors-headers
