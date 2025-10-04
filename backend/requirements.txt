@@ -6,3 +6,4 @@ djangorestframework
 djangorestframework-simplejwt
 gunicorn
 django-filter
+reportlab
