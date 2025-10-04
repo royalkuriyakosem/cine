@@ -1,87 +1,42 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Link, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
 import AdminDashboard from './pages/AdminDashboard';
-
-// Placeholder Dashboard Components
-const ProducerDashboard = () => <h2>Producer Dashboard</h2>;
-const DirectorDashboard = () => <h2>Director Dashboard</h2>;
-const CrewDashboard = () => <h2>Crew Dashboard</h2>;
-const Unauthorized = () => <h1>403 - Unauthorized</h1>;
+import MainLayout from './components/layout/MainLayout';
+import PreProduction from './pages/PreProduction';
+import Production from './pages/Production';
+import PostProduction from './pages/PostProduction';
 
 const App = () => {
     return (
         <AuthProvider>
             <BrowserRouter>
-                <Nav />
                 <Routes>
                     <Route path="/login" element={<Login />} />
-                    <Route path="/unauthorized" element={<Unauthorized />} />
+                    <Route path="/unauthorized" element={<h1>403 - Unauthorized</h1>} />
 
-                    {/* Admin Dashboard */}
-                    <Route
-                        path="/admin-dashboard"
+                    {/* Main application routes with layout */}
+                    <Route 
+                        path="/*"
                         element={
-                            <ProtectedRoute allowedRoles={['ADMIN']}>
-                                <AdminDashboard />
+                            <ProtectedRoute>
+                                <MainLayout>
+                                    <Routes>
+                                        <Route path="/admin" element={<ProtectedRoute allowedRoles={['ADMIN']}><AdminDashboard /></ProtectedRoute>} />
+                                        <Route path="/pre-production" element={<PreProduction />} />
+                                        <Route path="/production" element={<Production />} />
+                                        <Route path="/post-production" element={<PostProduction />} />
+                                        <Route path="/" element={<Navigate to="/pre-production" />} />
+                                    </Routes>
+                                </MainLayout>
                             </ProtectedRoute>
                         }
                     />
-
-                    {/* Producer Dashboard */}
-                    <Route
-                        path="/producer-dashboard"
-                        element={
-                            <ProtectedRoute allowedRoles={['PRODUCER', 'ADMIN']}>
-                                <ProducerDashboard />
-                            </ProtectedRoute>
-                        }
-                    />
-
-                    {/* Director Dashboard */}
-                    <Route
-                        path="/director-dashboard"
-                        element={
-                            <ProtectedRoute allowedRoles={['DIRECTOR', 'ADMIN']}>
-                                <DirectorDashboard />
-                            </ProtectedRoute>
-                        }
-                    />
-
-                    {/* General Crew Dashboard */}
-                    <Route
-                        path="/crew-dashboard"
-                        element={
-                            <ProtectedRoute allowedRoles={['CREW', 'PRODUCER', 'DIRECTOR', 'ADMIN']}>
-                                <CrewDashboard />
-                            </ProtectedRoute>
-                        }
-                    />
-                    
-                    <Route path="/" element={<Navigate to="/crew-dashboard" />} />
                 </Routes>
             </BrowserRouter>
         </AuthProvider>
-    );
-};
-
-// Simple navigation component for demonstration
-const Nav = () => {
-    const { user, logout } = useAuth();
-    return (
-        <nav>
-            {user?.role === 'ADMIN' && (
-                <>
-                    <Link to="/admin-dashboard">Admin</Link> |{" "}
-                </>
-            )}
-            <Link to="/producer-dashboard">Producer</Link> |{" "}
-            <Link to="/director-dashboard">Director</Link> |{" "}
-            <Link to="/crew-dashboard">Crew</Link>
-            {user && <button onClick={logout}>Logout</button>}
-        </nav>
     );
 };
 
