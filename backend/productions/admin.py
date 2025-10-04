@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Production, Scene, Shot, BudgetLine
+from .models import Production, Scene, Shot, BudgetLine, ScriptBreakdown
 
 @admin.register(Production)
 class ProductionAdmin(admin.ModelAdmin):
@@ -25,3 +25,9 @@ class BudgetLineAdmin(admin.ModelAdmin):
     list_display = ('category', 'production', 'estimated_amount', 'actual_amount', 'approved')
     list_filter = ('approved', 'production')
     search_fields = ('category', 'vendor')
+
+@admin.register(ScriptBreakdown)
+class ScriptBreakdownAdmin(admin.ModelAdmin):
+    list_display = ('production', 'created_at')
+    list_filter = ('production', 'created_at')
+    search_fields = ('notes',)

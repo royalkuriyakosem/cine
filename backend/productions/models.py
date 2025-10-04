@@ -58,3 +58,17 @@ class BudgetLine(models.Model):
 
     def __str__(self):
         return f"{self.category} - {self.production.title}"
+
+class ScriptBreakdown(models.Model):
+    production = models.ForeignKey(Production, on_delete=models.CASCADE, related_name='script_breakdowns')
+    created_at = models.DateTimeField(auto_now_add=True)
+    characters = models.JSONField(default=list)
+    props = models.JSONField(default=list)
+    locations = models.JSONField(default=list)
+    stunts = models.JSONField(default=list)
+    special_effects = models.JSONField(default=list)
+    raw_text = models.TextField(blank=True)
+    notes = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"Breakdown for {self.production.title} ({self.created_at.date()})"
