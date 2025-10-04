@@ -3,12 +3,12 @@ import { BrowserRouter, Routes, Route, Link, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
+import AdminDashboard from './pages/AdminDashboard';
 
 // Placeholder Dashboard Components
 const ProducerDashboard = () => <h2>Producer Dashboard</h2>;
 const DirectorDashboard = () => <h2>Director Dashboard</h2>;
 const CrewDashboard = () => <h2>Crew Dashboard</h2>;
-const AdminDashboard = () => <h2>Admin Dashboard</h2>;
 const Unauthorized = () => <h1>403 - Unauthorized</h1>;
 
 const App = () => {

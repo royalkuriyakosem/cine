@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .permissions import RolePermission
 from .serializers import UserProfileSerializer, UserCreateSerializer, MyTokenObtainPairSerializer
+from .models import CustomUser
 
 User = get_user_model()
 
@@ -35,3 +36,9 @@ class ProducerOrDirectorView(APIView):
     required_roles = ['PRODUCER', 'DIRECTOR']
     def get(self, request):
         return Response({"message": "Hello, Producer or Director!"})
+
+class UserListView(generics.ListAPIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = UserProfileSerializer
+    permission_classes = [RolePermission]
+    required_roles = ['ADMIN']

@@ -5,7 +5,8 @@ from .views import (
     UserCreateView, 
     AdminOnlyView, 
     ProducerOrDirectorView,
-    MyTokenObtainPairView
+    MyTokenObtainPairView,
+    UserListView
 )
 
 urlpatterns = [
@@ -18,4 +19,5 @@ urlpatterns = [
     path('profile/', UserProfileView.as_view(), name='user_profile'),
     path('admin-only/', AdminOnlyView.as_view(), name='admin_only'),
     path('producer-director/', ProducerOrDirectorView.as_view(), name='producer_director'),
+    path('users/', UserListView.as_view(), name='user_list'),
 ]
