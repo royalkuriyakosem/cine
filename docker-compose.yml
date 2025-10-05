@@ -10,6 +10,11 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U filmhub"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:7
@@ -19,26 +24,18 @@ services:
   web:
     build: ./backend
     command: >
-      sh -c "python manage.py collectstatic --no-input &&
-             python manage.py migrate &&
-             daphne -b 0.0.0.0 -p 8000 filmhub.asgi:application"
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             gunicorn filmhub.wsgi:application --bind 0.0.0.0:8000"
     volumes:
       - ./backend:/app
     ports:
       - "8000:8000"
+    env_file:
+      - ./.env
     depends_on:
       - db
       - redis
-    environment:
-      - DJANGO_SETTINGS_MODULE=filmhub.settings
-      - DATABASE_URL=postgres://filmhub:filmhub@db:5432/filmhub
-      - REDIS_URL=redis://redis:6379/0
-      - USE_S3=FALSE
-      - AWS_ACCESS_KEY_ID=your_key
-      - AWS_SECRET_ACCESS_KEY=your_secret
-      - AWS_STORAGE_BUCKET_NAME=your_bucket
-      - AWS_S3_REGION_NAME=your_region
-      - AWS_S3_ENDPOINT_URL=https://s3.amazonaws.com  # Or your S3-compatible endpoint
 
   worker:
     build: ./backend
@@ -70,7 +67,7 @@ services:
     build: ./frontend
     volumes:
       - ./frontend:/app
-      - /app/node_modules  # This prevents the local node_modules from mounting
+      - /app/node_modules
     ports:
       - "3000:3000"
     environment:

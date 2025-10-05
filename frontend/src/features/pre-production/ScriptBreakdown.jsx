@@ -1,21 +1,30 @@
 import React, { useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
 import ProtectedRoute from '../../components/ProtectedRoute';
 import { Card } from '../../components/ui/Card';
 import { FileUpload } from '../../components/ui/FileUpload';
 import { Button } from '../../components/ui/Button';
 import { Spinner } from '../../components/ui/Spinner';
 import { breakdownScript } from '../../api/productions';
+import DailyView from '../scheduling/components/DailyView';
+import WeeklyView from '../scheduling/components/WeeklyView';
+import CalendarView from '../scheduling/components/CalendarView';
+import { groupDataByWeek } from '../../utils/scheduleUtils';
 
 const ScriptBreakdown = ({ productionId }) => {
     const [file, setFile] = useState(null);
-    const [breakdown, setBreakdown] = useState(null);
+    const [schedule, setSchedule] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
+    const [view, setView] = useState('daily');
+    const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
+
+    const weeklyData = React.useMemo(() => 
+        schedule ? groupDataByWeek(schedule) : [], [schedule]
+    );
 
     const handleFileChange = (selectedFile) => {
         setFile(selectedFile);
-        setBreakdown(null);
+        setSchedule(null);
         setError('');
     };
 
@@ -27,65 +36,89 @@ const ScriptBreakdown = ({ productionId }) => {
 
         setIsLoading(true);
         setError('');
-
+        
         const reader = new FileReader();
         reader.onload = async (event) => {
             try {
                 const scriptText = event.target.result;
                 const result = await breakdownScript(productionId, scriptText);
-                setBreakdown(result);
+                setSchedule(result);
             } catch (err) {
-                setError('Failed to analyze script. The backend service may be unavailable.');
+                setError('Failed to analyze script. Please try again.');
+                console.error(err);
             } finally {
                 setIsLoading(false);
             }
         };
-        reader.onerror = () => {
-            setError('Failed to read the file.');
-            setIsLoading(false);
-        };
         reader.readAsText(file);
     };
 
-    const BreakdownCategory = ({ title, items }) => (
-        <div>
-            <h4 className="text-lg font-semibold text-gray-700 mb-2">{title}</h4>
-            {items && items.length > 0 ? (
-                <ul className="list-disc list-inside bg-gray-50 p-3 rounded-md space-y-1">
-                    {items.map((item, index) => (
-                        <li key={index} className="text-gray-600">{item}</li>
-                    ))}
-                </ul>
-            ) : (
-                <p className="text-gray-500 italic">None identified.</p>
-            )}
-        </div>
-    );
+    const handleNextWeek = () => {
+        setCurrentWeekIndex(prev => Math.min(prev + 1, weeklyData.length - 1));
+    };
+
+    const handlePrevWeek = () => {
+        setCurrentWeekIndex(prev => Math.max(prev - 1, 0));
+    };
 
     return (
         <Card>
-            <h3 className="text-xl font-bold mb-4 text-gray-800">Script Breakdown</h3>
+            <h3 className="text-xl font-bold mb-4">AI-Powered Schedule Generator</h3>
             
             <ProtectedRoute allowedRoles={['PRODUCER', 'ADMIN']}>
                 <div className="space-y-4 p-4 border rounded-lg bg-gray-50">
+                    <p className="text-sm text-gray-600">
+                        Upload a script file to generate a production schedule using AI.
+                    </p>
                     <FileUpload onFileSelect={handleFileChange} accept=".txt,.md" />
                     <Button onClick={handleAnalyzeClick} disabled={isLoading || !file}>
-                        {isLoading ? <Spinner /> : 'Analyze Script'}
+                        {isLoading ? <Spinner /> : 'Generate Schedule'}
                     </Button>
                     {error && <p className="text-red-500 mt-2">{error}</p>}
                 </div>
             </ProtectedRoute>
 
-            {breakdown && (
-                <div className="mt-6 space-y-6">
-                    <h3 className="text-lg font-semibold border-b pb-2">Analysis Results</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <BreakdownCategory title="Characters" items={breakdown.characters} />
-                        <BreakdownCategory title="Props" items={breakdown.props} />
-                        <BreakdownCategory title="Locations" items={breakdown.locations} />
-                        <BreakdownCategory title="Stunts" items={breakdown.stunts} />
-                        <BreakdownCategory title="Special Effects" items={breakdown.special_effects} />
+            {schedule && (
+                <div className="mt-6">
+                    <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-lg font-semibold">Generated Schedule</h3>
+                        <div className="space-x-2">
+                            <Button 
+                                onClick={() => setView('daily')}
+                                className={view === 'daily' ? 'bg-blue-600' : ''}
+                            >
+                                Daily
+                            </Button>
+                            <Button 
+                                onClick={() => setView('weekly')}
+                                className={view === 'weekly' ? 'bg-blue-600' : ''}
+                            >
+                                Weekly
+                            </Button>
+                            <Button 
+                                onClick={() => setView('calendar')}
+                                className={view === 'calendar' ? 'bg-blue-600' : ''}
+                            >
+                                Calendar
+                            </Button>
+                        </div>
                     </div>
+
+                    {view === 'daily' && (
+                        <DailyView scheduleData={schedule} onSelectDay={() => {}} />
+                    )}
+                    {view === 'weekly' && (
+                        <WeeklyView weeklyData={weeklyData} onSelectWeek={() => {}} />
+                    )}
+                    {view === 'calendar' && (
+                        <CalendarView 
+                            weekData={weeklyData[currentWeekIndex]}
+                            onPrevWeek={handlePrevWeek}
+                            onNextWeek={handleNextWeek}
+                            isFirstWeek={currentWeekIndex === 0}
+                            isLastWeek={currentWeekIndex === weeklyData.length - 1}
+                        />
+                    )}
                 </div>
             )}
         </Card>

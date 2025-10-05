@@ -1,0 +1,30 @@
+.schedule-view {
+    margin-top: 2rem;
+}
+
+.view-toggles {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.toggle-btn {
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.toggle-btn.active {
+    background-color: #2563eb;
+    color: white;
+}
+
+.loading-overlay {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 0.5rem;
+}

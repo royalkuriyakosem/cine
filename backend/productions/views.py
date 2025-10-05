@@ -8,6 +8,7 @@ from rest_framework.decorators import action
 from .services import analyze_script
 from .budget import predict_budget_for_production
 from .serializers import BudgetPredictionSerializer
+from .ai_service import generate_schedule_from_script # Import the new service
 
 class ProductionViewSet(viewsets.ModelViewSet):
     queryset = Production.objects.all()
@@ -32,9 +33,9 @@ class ProductionViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def breakdown(self, request, pk=None):
         """
-        Accept script text and return/save breakdown analysis.
+        Accepts script text, generates a production schedule using AI,
+        and returns the schedule as JSON.
         """
-        production = self.get_object()
         script_text = request.data.get('script_text')
         
         if not script_text:
@@ -43,21 +44,15 @@ class ProductionViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Analyze the script
-        analysis = analyze_script(script_text)
-
-        # Save the breakdown
-        breakdown = ScriptBreakdown.objects.create(
-            production=production,
-            raw_text=script_text,
-            **analysis
-        )
-
-        return Response({
-            "id": breakdown.id,
-            "created_at": breakdown.created_at,
-            **analysis
-        })
+        try:
+            # Generate the schedule using the AI service
+            schedule_data = generate_schedule_from_script(script_text)
+            return Response(schedule_data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {"error": f"Failed to generate schedule: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_SERVICE_UNAVAILABLE
+            )
 
 class SceneViewSet(viewsets.ModelViewSet):
     queryset = Scene.objects.all()

@@ -2,13 +2,28 @@ import api from './axiosConfig';
 
 export const breakdownScript = async (productionId, scriptText) => {
     try {
-        // CORRECTED: The action is on the ProductionViewSet, which is at /productions/productions/
-        const response = await api.post(`/productions/productions/${productionId}/breakdown/`, {
+        // Call the AI service endpoint
+        const response = await fetch('http://localhost:3001/api/generate-schedule', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ scriptText })
+        });
+
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+
+        const schedule = await response.json();
+        
+        // Save the generated schedule to backend
+        await api.post(`/productions/productions/${productionId}/breakdown/`, {
+            schedule_data: schedule,
             script_text: scriptText
         });
-        return response.data;
+
+        return schedule;
     } catch (error) {
-        console.error("Error breaking down script:", error.response?.data || error.message);
+        console.error("Error breaking down script:", error);
         throw error;
     }
 };

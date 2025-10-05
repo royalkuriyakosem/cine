@@ -1,0 +1,69 @@
+.scroll-container {
+  overflow-x: auto;
+  padding: 1rem;
+  display: flex;
+  gap: 1rem;
+}
+
+.calendar-view-container {
+  padding: 24px;
+  overflow-x: auto;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.week-card, .day-card {
+  background-color: white;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 16px;
+  min-width: 280px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.week-card:hover, .day-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+}
+
+.card-header h3 { 
+  margin: 0; 
+  color: var(--text-primary); 
+}
+
+.card-info p { 
+  margin: 4px 0; 
+  color: var(--text-secondary); 
+  font-size: 14px; 
+}
+
+.info-badge {
+  background-color: var(--accent-blue);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+:root {
+  --border-color: #e0e0e0;
+  --text-primary: #1a1a1a;
+  --text-secondary: #555;
+  --accent-blue: #007bff;
+}
