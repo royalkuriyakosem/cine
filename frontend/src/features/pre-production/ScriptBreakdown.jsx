@@ -4,7 +4,6 @@ import { Card } from '../../components/ui/Card';
 import { FileUpload } from '../../components/ui/FileUpload';
 import { Button } from '../../components/ui/Button';
 import { Spinner } from '../../components/ui/Spinner';
-import { breakdownScript } from '../../api/productions';
 import DailyView from '../scheduling/components/DailyView';
 import WeeklyView from '../scheduling/components/WeeklyView';
 import CalendarView from '../scheduling/components/CalendarView';
@@ -126,3 +125,24 @@ const ScriptBreakdown = ({ productionId }) => {
 };
 
 export default ScriptBreakdown;
+
+export const breakdownScript = async (productionId, scriptText) => {
+    try {
+        // Call the Node.js AI service endpoint
+        const response = await fetch('http://localhost:3001/api/generate-schedule', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ scriptText })
+        });
+
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+
+        const schedule = await response.json();
+        return schedule;
+    } catch (error) {
+        console.error("Error breaking down script:", error);
+        throw error;
+    }
+};

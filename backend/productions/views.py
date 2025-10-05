@@ -8,7 +8,12 @@ from rest_framework.decorators import action
 from .services import analyze_script
 from .budget import predict_budget_for_production
 from .serializers import BudgetPredictionSerializer
-from .ai_service import generate_schedule_from_script # Import the new service
+import google.generativeai as genai
+import os
+import json
+import logging
+
+logger = logging.getLogger(__name__) # Import the new service
 
 class ProductionViewSet(viewsets.ModelViewSet):
     queryset = Production.objects.all()

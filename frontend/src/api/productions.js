@@ -2,7 +2,7 @@ import api from './axiosConfig';
 
 export const breakdownScript = async (productionId, scriptText) => {
     try {
-        // Call the AI service endpoint
+        // Call the Node.js AI service endpoint
         const response = await fetch('http://localhost:3001/api/generate-schedule', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -15,8 +15,8 @@ export const breakdownScript = async (productionId, scriptText) => {
 
         const schedule = await response.json();
         
-        // Save the generated schedule to backend
-        await api.post(`/productions/productions/${productionId}/breakdown/`, {
+        // Save the schedule to backend for reference
+        await api.post(`/productions/productions/${productionId}/schedule/`, {
             schedule_data: schedule,
             script_text: scriptText
         });
