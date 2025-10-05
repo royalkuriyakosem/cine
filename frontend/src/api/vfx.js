@@ -40,3 +40,8 @@ export const uploadVFXVersion = async (vfxShotId, file, notes) => {
         throw error;
     }
 };
+
+export const getAssets = (productionId) => api.get(`/assets/?production=${productionId}`);
+export const addAsset = (formData) => api.post('/assets/', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+});

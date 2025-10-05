@@ -1,14 +1,44 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useProduction } from '../../context/ProductionContext';
+import { Select } from '../ui/Select';
+import { Button } from '../ui/Button';
+import ProductionForm from '../../features/productions/ProductionForm';
+import { addProduction } from '../../api/productions';
 
 const Header = () => {
     const { user, logout } = useAuth();
+    const { productions, selectedProduction, setSelectedProduction, refreshProductions } = useProduction();
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const handleProductionChange = (e) => {
+        const prodId = parseInt(e.target.value, 10);
+        const newSelection = productions.find(p => p.id === prodId);
+        setSelectedProduction(newSelection);
+    };
+
+    const handleSaveProduction = async (formData) => {
+        await addProduction(formData);
+        refreshProductions(); // Refresh the list in the context
+        setIsModalOpen(false);
+    };
 
     return (
         <header className="flex items-center justify-between px-6 py-4 bg-white border-b-2 border-gray-200">
             <div className="flex items-center">
-                {/* Mobile sidebar toggle can be added here */}
-                <h2 className="text-xl font-semibold text-gray-800">Dashboard</h2>
+                <h2 className="text-xl font-semibold text-gray-800 mr-4">Dashboard</h2>
+                {productions.length > 0 && selectedProduction && (
+                    <Select
+                        name="production_selector"
+                        value={selectedProduction.id}
+                        onChange={handleProductionChange}
+                    >
+                        {productions.map(prod => (
+                            <option key={prod.id} value={prod.id}>{prod.title}</option>
+                        ))}
+                    </Select>
+                )}
+                <Button onClick={() => setIsModalOpen(true)} size="sm" className="ml-4">New Production</Button>
             </div>
             <div className="flex items-center">
                 <div className="relative">
@@ -21,6 +51,7 @@ const Header = () => {
                     </button>
                 </div>
             </div>
+            {isModalOpen && <ProductionForm onClose={() => setIsModalOpen(false)} onSave={handleSaveProduction} />}
         </header>
     );
 };

@@ -144,3 +144,6 @@ CELERY_BEAT_SCHEDULE = {
 }
 
 AUTH_USER_MODEL = 'accounts.CustomUser'
+
+# Add this line to fix the AutoField warnings
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
