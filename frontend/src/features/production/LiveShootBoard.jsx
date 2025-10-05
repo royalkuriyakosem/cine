@@ -1,43 +1,53 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from '../../components/ui/Card';
 import { Spinner } from '../../components/ui/Spinner';
-import { getScenesForProduction } from '../../api/productions';
+import { Button } from '../../components/ui/Button';
+import { getScenesForProduction, addScene } from '../../api/productions';
+import SceneForm from '../productions/SceneForm';
 
 const LiveShootBoard = ({ productionId }) => {
     const [scenes, setScenes] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     // NOTE: The backend Scene model does not have a 'status' field.
     // This state is managed on the frontend for demonstration purposes.
     const [sceneStatuses, setSceneStatuses] = useState({});
     const STATUSES = ['To Do', 'In Progress', 'Done'];
 
+    const fetchScenes = async () => {
+        if (!productionId) return;
+        try {
+            setIsLoading(true);
+            const data = await getScenesForProduction(productionId);
+            setScenes(data);
+            // Initialize statuses
+            const initialStatuses = data.reduce((acc, scene) => {
+                acc[scene.id] = 'To Do'; // Default status
+                return acc;
+            }, {});
+            setSceneStatuses(initialStatuses);
+        } catch (err) {
+            setError('Failed to load scenes.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const fetchScenes = async () => {
-            if (!productionId) return;
-            try {
-                setIsLoading(true);
-                const data = await getScenesForProduction(productionId);
-                setScenes(data);
-                // Initialize statuses
-                const initialStatuses = data.reduce((acc, scene) => {
-                    acc[scene.id] = 'To Do'; // Default status
-                    return acc;
-                }, {});
-                setSceneStatuses(initialStatuses);
-            } catch (err) {
-                setError('Failed to load scenes.');
-            } finally {
-                setIsLoading(false);
-            }
-        };
         fetchScenes();
     }, [productionId]);
 
     const handleStatusChange = (sceneId, newStatus) => {
         setSceneStatuses(prev => ({ ...prev, [sceneId]: newStatus }));
         // In a real app, you would call an API to persist this change.
+    };
+
+    const handleSaveScene = async (formData) => {
+        await addScene({ ...formData, production: productionId });
+        setIsModalOpen(false);
+        fetchScenes();
     };
 
     const SceneCard = ({ scene }) => (
@@ -62,7 +72,10 @@ const LiveShootBoard = ({ productionId }) => {
 
     return (
         <Card>
-            <h3 className="text-xl font-bold mb-4 text-gray-800">Live Shoot Board</h3>
+            <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-bold text-gray-800">Live Shoot Board</h3>
+                <Button onClick={() => setIsModalOpen(true)}>Add Scene</Button>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {STATUSES.map(status => (
                     <div key={status} className="bg-gray-100 p-4 rounded-lg">
@@ -75,6 +88,7 @@ const LiveShootBoard = ({ productionId }) => {
                     </div>
                 ))}
             </div>
+            {isModalOpen && <SceneForm onClose={() => setIsModalOpen(false)} onSave={handleSaveScene} />}
         </Card>
     );
 };
